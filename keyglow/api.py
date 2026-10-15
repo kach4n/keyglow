@@ -1,11 +1,16 @@
 """Functions the web UI calls through pywebview's js_api."""
 
+import sys
 import threading
 
 from . import layout, lighting, patterns
 from .device import DeviceError, Keyboard
-from .gamingmode import GamingMode
 from .profiles import Store
+
+if sys.platform == "win32":
+    from .gamingmode import GamingMode
+else:
+    GamingMode = None       # needs a global keyboard hook; Windows only for now
 
 
 class Api:
@@ -13,7 +18,7 @@ class Api:
         self._store = store or Store()
         self._kb = None
         self._kb_lock = threading.Lock()
-        self._gaming = GamingMode()
+        self._gaming = GamingMode() if GamingMode else None
         self._apply_gaming()
 
     # -- device ------------------------------------------------------------
@@ -22,32 +27,35 @@ class Api:
             self._kb = Keyboard.find()
         return self._kb
 
+    def _drop(self):
+        if self._kb:
+            self._kb.close()
+        self._kb = None
+
     def _write(self, block):
         with self._kb_lock:
             for attempt in range(2):
-                kb = self._keyboard()
-                if kb is None:
-                    return {"ok": False, "message": "Keyboard not found. Check that it is plugged in."}
                 try:
+                    kb = self._keyboard()
+                    if kb is None:
+                        return {"ok": False, "message": "Keyboard not found. Check that it is plugged in."}
                     kb.write_block(0x0A, block)
                     return {"ok": True, "message": "Saved to the keyboard."}
                 except (DeviceError, OSError) as e:
-                    kb.close()
-                    self._kb = None
+                    self._drop()
                     if attempt:
                         return {"ok": False, "message": str(e)}
 
     def device_status(self):
         with self._kb_lock:
-            kb = self._keyboard()
-            if kb is None:
-                return {"connected": False}
             try:
+                kb = self._keyboard()
+                if kb is None:
+                    return {"connected": False, "message": "Keyboard not found"}
                 kb.is_ready()
-            except (DeviceError, OSError):
-                kb.close()
-                self._kb = None
-                return {"connected": False}
+            except (DeviceError, OSError) as e:
+                self._drop()
+                return {"connected": False, "message": str(e)}
             v = kb.version
             return {"connected": True, "firmware": f"{v >> 8}.{v & 0xFF:02d}"}
 
@@ -58,6 +66,7 @@ class Api:
             "settings": self._store.data,
             "patterns": patterns.all_patterns(),
             "limits": {"brightness": lighting.MAX_BRIGHTNESS, "speed": list(lighting.SPEEDS)},
+            "features": {"gaming_mode": self._gaming is not None},
         }
 
     def save_settings(self, settings):
@@ -77,11 +86,13 @@ class Api:
         return self._write(lighting.off_block(profile))
 
     def _apply_gaming(self):
+        if not self._gaming:
+            return
         data = self._store.data
         g = data["profiles"][data["active"]]["gaming"]
         self._gaming.configure(g.get("win"), g.get("alt_tab"), g.get("alt_f4"))
 
     def shutdown(self):
-        self._gaming.stop()
-        if self._kb:
-            self._kb.close()
+        if self._gaming:
+            self._gaming.stop()
+        self._drop()

@@ -1,0 +1,3 @@
+# Lets the logged-in user talk to the HyperX Mars Gaming Keyboard (0951:16C6)
+# so KeyGlow can change its lighting without root.
+SUBSYSTEM=="hidraw", ATTRS{idVendor}=="0951", ATTRS{idProduct}=="16c6", MODE="0660", TAG+="uaccess"

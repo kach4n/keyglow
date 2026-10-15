@@ -76,7 +76,7 @@ async function applyToKeyboard() {
 async function refreshDevice() {
   const d = await window.pywebview.api.device_status();
   $("#device").classList.toggle("on", d.connected);
-  $("#device-text").textContent = d.connected ? `Keyboard connected · FW ${d.firmware}` : "Keyboard not found";
+  $("#device-text").textContent = d.connected ? `Keyboard connected · FW ${d.firmware}` : (d.message || "Keyboard not found");
 }
 
 // ---------- keyboard preview ----------
@@ -366,6 +366,7 @@ function renderAll() {
 async function init() {
   const data = await window.pywebview.api.get_init();
   S = data.settings; L = data.layout; PATTERNS = data.patterns; LIMITS = data.limits;
+  if (!data.features.gaming_mode) document.querySelector('.tab[data-tab="gaming"]').hidden = true;
   buildKeyboard(); setupTabs(); setupPaint(); renderPatterns(); renderAll();
   $("#profile-name").addEventListener("input", (e) => { profile().name = e.target.value || `Profile ${S.active + 1}`; changed({ markDirty: false }); });
   $("#btn-apply").addEventListener("click", applyToKeyboard);

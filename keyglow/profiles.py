@@ -1,4 +1,5 @@
-"""Profiles stored as JSON in %APPDATA%\\KeyGlow\\settings.json."""
+"""Profiles stored as JSON: %APPDATA%\\KeyGlow\\settings.json on Windows,
+~/.config/KeyGlow/settings.json on Linux."""
 
 import copy
 import json
@@ -43,7 +44,10 @@ def _merge(base, saved):
 
 class Store:
     def __init__(self, path=None):
-        root = Path(os.environ.get("APPDATA", Path.home())) / "KeyGlow"
+        if os.name == "nt":
+            root = Path(os.environ.get("APPDATA", Path.home())) / "KeyGlow"
+        else:
+            root = Path(os.environ.get("XDG_CONFIG_HOME", Path.home() / ".config")) / "KeyGlow"
         self.path = Path(path) if path else root / "settings.json"
         self.data = self._load()
 

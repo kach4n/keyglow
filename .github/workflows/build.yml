@@ -1,0 +1,96 @@
+name: Build
+
+on:
+  push:
+    branches: [main]
+    tags: ["v*"]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Build
+        run: powershell -ExecutionPolicy Bypass -File build.ps1
+      - name: Smoke test (exe opens its window and loads the UI)
+        shell: pwsh
+        run: |
+          $p = Start-Process dist\KeyGlow.exe -ArgumentList "--smoke-test" -Wait -PassThru
+          if ($p.ExitCode -ne 0) { throw "KeyGlow.exe smoke test failed ($($p.ExitCode))" }
+      - uses: actions/upload-artifact@v4
+        with:
+          name: windows
+          path: dist/KeyGlow.exe
+
+  linux:
+    # Oldest supported Ubuntu: binaries built here also run on newer distros.
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install Qt runtime libraries (bundled into the build)
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y xvfb libxcb-cursor0 libxkbcommon-x11-0 libxcb-icccm4 libxcb-image0 \
+            libxcb-keysyms1 libxcb-randr0 libxcb-render-util0 libxcb-shape0 libxcb-xinerama0 \
+            libegl1 libnss3 libasound2 libxcomposite1 libxdamage1 libxrandr2 libxtst6
+      - name: Build
+        run: sh build-linux.sh
+      - name: Smoke test
+        env:
+          QTWEBENGINE_CHROMIUM_FLAGS: --no-sandbox --disable-gpu
+        run: xvfb-run -a dist/linux/KeyGlow/KeyGlow --smoke-test
+      - uses: actions/upload-artifact@v4
+        with:
+          name: linux
+          path: dist/KeyGlow-linux-x86_64.tar.gz
+
+  linux-clean-machine:
+    # Runs the Linux build on a bare Ubuntu 24.04 with no Python and no Qt,
+    # only a virtual display, to prove the download is self-contained.
+    needs: linux
+    runs-on: ubuntu-latest
+    container: ubuntu:24.04
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: linux
+      - name: Install only a virtual display
+        run: |
+          apt-get update
+          DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends xvfb xauth
+          ! command -v python3
+      - name: Smoke test
+        env:
+          QTWEBENGINE_CHROMIUM_FLAGS: --no-sandbox --disable-gpu
+        run: |
+          tar -xzf KeyGlow-linux-x86_64.tar.gz
+          xvfb-run -a KeyGlow/KeyGlow --smoke-test
+
+  release:
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: [windows, linux, linux-clean-machine]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+      - name: Publish release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "$GITHUB_REF_NAME" \
+            artifacts/windows/KeyGlow.exe \
+            artifacts/linux/KeyGlow-linux-x86_64.tar.gz \
+            --title "KeyGlow ${GITHUB_REF_NAME#v}" \
+            --notes-file docs/RELEASE_NOTES.md

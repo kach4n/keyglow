@@ -174,11 +174,12 @@ def typing_zones():
 def brasil():
     def color(k, x, y):
         dx, dy = (x - 0.33) * 2.2, (y - 0.5) * 2
+        # Pure primaries: LEDs turn mixed tones like #00a83c into teal/blue.
         if math.hypot(dx * 1.6, dy) < 0.45:
-            return "#1a3fd6"
+            return "#0000ff"
         if abs(dx) + abs(dy) < 1.0:
-            return "#ffd400"
-        return "#00a83c"
+            return "#ffff00"
+        return "#00ff00"
     return _by_position(color)
 
 

@@ -17,17 +17,33 @@ A friendly, open-source lighting app for the **HyperX Mars Gaming Keyboard**
 
 ## Download
 
-Grab `KeyGlow.exe` from the [Releases](../../releases) page and run it. There's
-no installer. It needs Windows 10/11 with the Microsoft Edge WebView2 runtime,
-which ships with Windows 11.
+Both downloads on the [Releases](../../releases) page are portable, with
+Python and everything else bundled. You don't need to install Python.
+
+**Windows 10/11:** download `KeyGlow.exe` and run it. It uses the WebView2
+runtime that comes with Windows 11 and current Windows 10.
+
+**Linux (x86_64, Ubuntu 22.04+ or similar):**
+
+```sh
+tar -xzf KeyGlow-linux-x86_64.tar.gz
+cd KeyGlow
+./install.sh      # one time: udev rule so your user can reach the keyboard, plus a menu entry
+./KeyGlow
+```
+
+Gaming mode is Windows-only.
 
 ## Build from source
 
 ```powershell
-git clone <this repo>
+git clone https://github.com/kach4n/keyglow
 cd keyglow
-powershell -ExecutionPolicy Bypass -File build.ps1   # runs tests, then builds dist\KeyGlow.exe
+powershell -ExecutionPolicy Bypass -File build.ps1   # Windows: runs tests, builds dist\KeyGlow.exe
+sh build-linux.sh                                    # Linux: builds dist/KeyGlow-linux-x86_64.tar.gz
 ```
+
+Every push is built and smoke-tested on GitHub Actions. Tagging `v*` publishes a release with both builds.
 
 To run without building:
 
@@ -39,7 +55,7 @@ python -m venv .venv
 
 ## Good to know
 
-- Settings live in `%APPDATA%\KeyGlow\settings.json`.
+- Settings live in `%APPDATA%\KeyGlow\settings.json` (Windows) or `~/.config/KeyGlow/settings.json` (Linux).
 - Each **Apply** writes to the keyboard's flash memory. That's fine for normal
   use, so KeyGlow only writes when you click Apply or switch profiles. It never
   streams animations.

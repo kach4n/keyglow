@@ -1,4 +1,5 @@
-"""Draws assets/keyglow.ico (a glowing keyboard)."""
+"""Draws assets/keyglow.ico (or assets/keyglow.png with --png): a glowing keyboard."""
+import sys
 from pathlib import Path
 from PIL import Image, ImageDraw, ImageFilter
 
@@ -17,6 +18,11 @@ for row in range(3):
 g.rounded_rectangle((76, 190, 180, 214), 8, fill=(122, 92, 255, 255))
 img = Image.alpha_composite(base, glow.filter(ImageFilter.GaussianBlur(10)))
 img = Image.alpha_composite(img, glow)
-out = Path(__file__).resolve().parent.parent / "assets" / "keyglow.ico"
-img.save(out, sizes=[(16, 16), (24, 24), (32, 32), (48, 48), (64, 64), (128, 128), (256, 256)])
+assets = Path(__file__).resolve().parent.parent / "assets"
+if "--png" in sys.argv:            # Linux desktop icon
+    out = assets / "keyglow.png"
+    img.save(out)
+else:
+    out = assets / "keyglow.ico"
+    img.save(out, sizes=[(16, 16), (24, 24), (32, 32), (48, 48), (64, 64), (128, 128), (256, 256)])
 print("wrote", out)
