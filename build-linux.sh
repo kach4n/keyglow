@@ -17,6 +17,7 @@ cd "$(dirname "$0")"
     --workpath build/linux --distpath dist/linux \
     keyglow_app.py
 
+sh packaging/linux/bundle_libs.sh dist/linux/KeyGlow
 cp packaging/linux/99-keyglow.rules packaging/linux/install.sh assets/keyglow.png dist/linux/KeyGlow/
 chmod +x dist/linux/KeyGlow/install.sh
 tar -C dist/linux -czf dist/KeyGlow-linux-x86_64.tar.gz KeyGlow
