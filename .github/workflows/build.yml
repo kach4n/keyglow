@@ -55,9 +55,9 @@ jobs:
           path: dist/KeyGlow-linux-x86_64.tar.gz
 
   linux-clean-machine:
-    # Runs the Linux build on a fresh Ubuntu 24.04 that has only the graphics
-    # and font libraries every desktop install ships (no Python, no Qt), to
-    # prove the download is self-contained.
+    # Runs the Linux build on a fresh Ubuntu 24.04 that has only the X11,
+    # Wayland, graphics and font libraries every desktop install ships
+    # (no Python, no Qt), to prove the download is self-contained.
     needs: linux
     runs-on: ubuntu-latest
     container: ubuntu:24.04
@@ -70,7 +70,9 @@ jobs:
           apt-get update
           DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends xvfb xauth \
             libegl1 libgl1 libegl-mesa0 libgl1-mesa-dri libgbm1 \
-            libfontconfig1 libfreetype6 libxkbcommon0 libdbus-1-3 libglib2.0-0t64
+            libfontconfig1 libfreetype6 libxkbcommon0 libdbus-1-3 libglib2.0-0t64 \
+            libx11-6 libx11-xcb1 libxcb1 libxext6 libxfixes3 libxcb-randr0 libxcb-shm0 libxcb-xfixes0 \
+            libwayland-client0 libwayland-server0 libwayland-egl1 libwayland-cursor0
           ! command -v python3
       - name: List libraries the build still expects from the system
         run: |
