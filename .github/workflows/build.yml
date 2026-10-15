@@ -1,4 +1,4 @@
-name: Build
+﻿name: Build
 
 on:
   push:
@@ -48,7 +48,7 @@ jobs:
       - name: Smoke test
         env:
           QTWEBENGINE_CHROMIUM_FLAGS: --no-sandbox --disable-gpu
-        run: xvfb-run -a dist/linux/KeyGlow/KeyGlow --smoke-test
+        run: xvfb-run -a -s "-screen 0 1280x1024x24" dist/linux/KeyGlow/KeyGlow --smoke-test
       - uses: actions/upload-artifact@v4
         with:
           name: linux
@@ -80,7 +80,7 @@ jobs:
       - name: Smoke test
         env:
           QTWEBENGINE_CHROMIUM_FLAGS: --no-sandbox --disable-gpu
-        run: xvfb-run -a KeyGlow/KeyGlow --smoke-test
+        run: xvfb-run -a -s "-screen 0 1280x1024x24" KeyGlow/KeyGlow --smoke-test
 
   release:
     if: startsWith(github.ref, 'refs/tags/v')
