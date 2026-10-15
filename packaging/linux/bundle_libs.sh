@@ -17,6 +17,15 @@ skip="$skip"'|lib(X11|X11-xcb|Xext|Xfixes|Xxf86vm|Xau|Xdmcp|xshmfence|ICE|SM)\.s
 skip="$skip"'|libxcb\.so.*|libxcb-(dri2|dri3|glx|present|sync|xfixes|randr|shm)\.so.*'
 skip="$skip"'|lib(glib|gobject|gio|gmodule|gthread)-2\.0\.so.*|lib(dbus-1|fontconfig|freetype|systemd|udev|ffi|pcre2?-8|selinux|mount|blkid)\.so.*)$'
 
+# PyInstaller bundles some of these by itself; drop them so the system copies load.
+for path in "$app"/*.so*; do
+    name=$(basename "$path")
+    if echo "$name" | grep -Eq "$skip"; then
+        rm -f "$path"
+        echo "unbundled $name"
+    fi
+done
+
 deps() {
     find "$app" -name '*.so*' -type f -exec ldd {} + 2>/dev/null \
         | awk -v app="$app" '$2 == "=>" && $3 ~ /^\// && index($3, app) != 1 {print $1, $3}' \
