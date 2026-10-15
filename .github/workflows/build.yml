@@ -74,6 +74,11 @@ jobs:
             libx11-6 libx11-xcb1 libxcb1 libxext6 libxfixes3 libxcb-randr0 libxcb-shm0 libxcb-xfixes0 \
             libwayland-client0 libwayland-server0 libwayland-egl1 libwayland-cursor0
           ! command -v python3
+      - name: Check the virtual display's OpenGL (no KeyGlow involved)
+        continue-on-error: true
+        run: |
+          DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends mesa-utils
+          xvfb-run -a -s "-screen 0 1280x1024x24" glxinfo -B
       - name: List libraries the build still expects from the system
         run: |
           tar -xzf KeyGlow-linux-x86_64.tar.gz
