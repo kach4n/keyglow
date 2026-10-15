@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>KeyGlow</title>
+<link rel="stylesheet" href="app.css">
+</head>
+<body>
+<div class="app">
+  <aside class="sidebar">
+    <div class="brand">
+      <svg viewBox="0 0 32 32" aria-hidden="true"><defs><linearGradient id="lg" x1="0" x2="1" y1="0" y2="1"><stop offset="0" stop-color="#ff3d77"/><stop offset=".5" stop-color="#7a5cff"/><stop offset="1" stop-color="#22d3ee"/></linearGradient></defs><rect x="3" y="8" width="26" height="16" rx="4" fill="none" stroke="url(#lg)" stroke-width="2.5"/><path d="M8 13h2M13 13h2M18 13h2M23 13h1M9 19h14" stroke="url(#lg)" stroke-width="2.5" stroke-linecap="round"/></svg>
+      <span>KeyGlow</span>
+    </div>
+    <div class="section-label">Profiles</div>
+    <ul id="profiles" class="profiles"></ul>
+    <div class="device" id="device">
+      <span class="dot"></span><span id="device-text">Looking for keyboard…</span>
+    </div>
+  </aside>
+
+  <main class="main">
+    <header class="topbar">
+      <div class="title">
+        <input id="profile-name" class="profile-name" spellcheck="false" aria-label="Profile name">
+        <span id="dirty" class="dirty" hidden>Not on keyboard yet</span>
+      </div>
+      <div class="actions">
+        <button id="btn-off" class="btn ghost" title="Turn all keyboard lights off">Lights off</button>
+        <button id="btn-apply" class="btn primary">Apply to keyboard</button>
+      </div>
+    </header>
+
+    <section class="stage">
+      <div id="keyboard" class="keyboard" aria-label="Keyboard preview"></div>
+    </section>
+
+    <nav class="tabs" role="tablist">
+      <button class="tab active" data-tab="effects">Effects</button>
+      <button class="tab" data-tab="paint">Paint keys</button>
+      <button class="tab" data-tab="patterns">Patterns</button>
+      <button class="tab" data-tab="gaming">Gaming mode</button>
+    </nav>
+
+    <section class="panel" id="tab-effects">
+      <div id="modes" class="modes"></div>
+      <div id="mode-settings" class="settings"></div>
+    </section>
+
+    <section class="panel" id="tab-paint" hidden>
+      <div class="paint-tools">
+        <div class="group">
+          <label class="field-label">Color</label>
+          <div class="color-row">
+            <input type="color" id="paint-color" value="#22d3ee">
+            <div id="swatches" class="swatches"></div>
+          </div>
+        </div>
+        <div class="group">
+          <label class="field-label">Tool</label>
+          <div class="seg" id="paint-tool">
+            <button data-tool="brush" class="on">Brush</button>
+            <button data-tool="erase">Eraser</button>
+            <button data-tool="pick">Eyedropper</button>
+          </div>
+        </div>
+        <div class="group">
+          <label class="field-label">Whole board</label>
+          <div class="row">
+            <button class="btn small" id="paint-fill">Fill</button>
+            <button class="btn small" id="paint-clear">Clear</button>
+          </div>
+        </div>
+        <div class="group grow">
+          <label class="field-label">Brightness <b id="custom-bright-val"></b></label>
+          <input type="range" id="custom-bright" min="0" max="5" step="1">
+        </div>
+      </div>
+      <p class="hint">Click or drag across keys on the preview to paint them. Painting switches this profile to <b>Custom</b>.</p>
+      <div class="designs">
+        <div class="row">
+          <input id="design-name" class="text" placeholder="Name this design" maxlength="40">
+          <button class="btn small" id="design-save">Save design</button>
+        </div>
+        <div id="design-list" class="design-list"></div>
+      </div>
+    </section>
+
+    <section class="panel" id="tab-patterns" hidden>
+      <p class="hint">Pick a design. It's stored on the keyboard as a custom layout, so it keeps working without this app. You can touch it up in <b>Paint keys</b> afterwards.</p>
+      <div id="pattern-grid" class="pattern-grid"></div>
+    </section>
+
+    <section class="panel" id="tab-gaming" hidden>
+      <p class="hint">Blocks keys that can throw you out of a game. Active while KeyGlow is running, for the selected profile.</p>
+      <div class="toggles">
+        <label class="toggle"><input type="checkbox" id="g-win"><span class="switch"></span><span><b>Windows key</b><small>Stop the Start menu from opening mid-game</small></span></label>
+        <label class="toggle"><input type="checkbox" id="g-alttab"><span class="switch"></span><span><b>Alt + Tab</b><small>Prevent switching windows by accident</small></span></label>
+        <label class="toggle"><input type="checkbox" id="g-altf4"><span class="switch"></span><span><b>Alt + F4</b><small>Prevent closing the game by accident</small></span></label>
+      </div>
+    </section>
+  </main>
+</div>
+<div id="toast" class="toast" role="status" aria-live="polite"></div>
+<script src="app.js"></script>
+</body>
+</html>
